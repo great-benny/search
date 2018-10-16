@@ -82,12 +82,63 @@ def depthFirstSearch(problem):
   print "Start's successors:", problem.getSuccessors(problem.getStartState())
   """
   "*** YOUR CODE HERE ***"
-  util.raiseNotDefined()
+
+  from game import Directions
+
+  # initialization
+  search_nodes = util.Stack()
+  traversed = []
+
+  # push the starting point into stack
+  search_nodes.push((problem.getStartState(), []))
+
+  # pop out the point
+  (state, move_dir) = search_nodes.pop()
+
+  # add the point to traversed list
+  traversed.append(state)
+
+  while not problem.isGoalState(state):  # while we do not find the goal point
+      successors = problem.getSuccessors(state)  # get the point's successors
+      for elem in successors:
+          if (not elem[0] in traversed) or (
+          problem.isGoalState(elem[0])):  # if the successor has not been traversed, push it into stack
+              search_nodes.push((elem[0], move_dir + [elem[1]]))
+              traversed.append(elem[0])  # add this point to traversed list
+      (state, move_dir) = search_nodes.pop()
+
+  return move_dir
 
 def breadthFirstSearch(problem):
   "Search the shallowest nodes in the search tree first. [p 81]"
   "*** YOUR CODE HERE ***"
-  util.raiseNotDefined()
+
+  from game import Directions
+
+  # initialization
+  search_nodes = util.Queue()
+  traversed = []
+
+  # push the starting point into stack
+  search_nodes.push((problem.getStartState(), []))
+
+  # pop out the point
+  (state, move_dir) = search_nodes.pop()
+
+  # add the point to traversed list
+  traversed.append(state)
+
+  while not problem.isGoalState(state):  # while we do not find the goal point
+      successors = problem.getSuccessors(state)  # get the point's successors
+      for elem in successors:
+          if (not elem[0] in traversed) or (
+                  problem.isGoalState(elem[0])):  # if the successor has not been traversed, push it into stack
+              search_nodes.push((elem[0], move_dir + [elem[1]]))
+              traversed.append(elem[0])  # add this point to traversed list
+              # print 'elem[0]= ' + str(elem[0]) + ' elem[1]= ' + str(elem[1])  # print the route
+      (state, move_dir) = search_nodes.pop()
+
+  return move_dir
       
 def uniformCostSearch(problem):
   "Search the node of least total cost first. "
