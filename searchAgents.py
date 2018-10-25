@@ -281,12 +281,16 @@ class CornersProblem(search.SearchProblem):
   def getStartState(self):
     "Returns the start state (in your state space, not the full Pacman state space)"
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # Store visited corners in an array, and give the state as a tuple of
+    # the current state and the visited corners
+    visited = []
+    return (self.startingPosition, visited)
     
   def isGoalState(self, state):
     "Returns whether this search state is a goal state of the problem"
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # Corners are all visited if there are 4 elements in the corners array.
+    return len(state[1]) == 4
        
   def getSuccessors(self, state):
     """
@@ -301,16 +305,32 @@ class CornersProblem(search.SearchProblem):
     """
     
     successors = []
+    currentPosition = state[0]
+    foundCorners = state[1]
+    bottom, left, top, right = 1, 1, self.walls.height - 2, self.walls.width - 2
+
+    # For every direction from the current position, check to see if moving
+    # will hit a wall. If it doesn't, see if making the move would lead to
+    # a corner. If so, give that move as a possible successor, and update
+    # the visited corners to reflect that the corner is visited (if that
+    # move is mode). Otherwise, just update the position without changing
+    # the visited corners.
     for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
       # Add a successor state to the successor list if the action is legal
       # Here's a code snippet for figuring out whether a new position hits a wall:
-      #   x,y = currentPosition
-      #   dx, dy = Actions.directionToVector(action)
-      #   nextx, nexty = int(x + dx), int(y + dy)
-      #   hitsWall = self.walls[nextx][nexty]
+        x,y = currentPosition
+        dx, dy = Actions.directionToVector(action)
+        nextx, nexty = int(x + dx), int(y + dy)
+        hitsWall = self.walls[nextx][nexty]
       
-      "*** YOUR CODE HERE ***"
-      
+    # "*** YOUR CODE HERE ***"
+        if not hitsWall:
+          if (nextx, nexty) in self.corners and (nextx, nexty) not in foundCorners:
+            visited = foundCorners + [(nextx, nexty)]
+            successors.append((((nextx, nexty), visited), action, 1))
+          else:
+            successors.append((((nextx, nexty), foundCorners), action, 1))
+
     self._expanded += 1
     return successors
 
@@ -346,7 +366,35 @@ def cornersHeuristic(state, problem):
   walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
   
   "*** YOUR CODE HERE ***"
-  return 0 # Default to trivial solution
+  # return 0 # Default to trivial solution
+  corners = problem.corners  # These are the corner coordinates
+  walls = problem.walls  # These are the walls of the maze, as a Grid (game.py)
+  unvisited = []  # Hold unvisited corners
+  visited = state[1]  # Visited corners
+  node = state[0]  # Current node
+  heuristic = 0  # Heuristic value
+
+  # Find all the corners that we haven't visited yet, and append them to a
+  # list so we can go through them
+  for corner in corners:
+    if not corner in visited:
+      unvisited.append(corner)
+
+  # Find the sum of the shortest distances between the unvisited corners. Use
+  # this as the heuristic because it is consistent (will always choose the
+  # same corners for a given situation). It solves the simpler problem where
+  # we find the number of moves when all of the walls have been removed. The
+  # heuristic will return 0 at a goal state since the minimum distance to a
+  # corner when in a corner is 0, and will never return a negative since
+  # mangattanDistance can never be negative.
+  while unvisited:
+    distance, corner = min([(util.manhattanDistance(node, corner), corner) \
+                            for corner in unvisited])
+    heuristic += distance
+    node = corner
+    unvisited.remove(corner)
+
+  return heuristic
 
 class AStarCornersAgent(SearchAgent):
   "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
