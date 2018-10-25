@@ -158,9 +158,40 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
   "Search the node that has the lowest combined cost and heuristic first."
   "*** YOUR CODE HERE ***"
-  util.raiseNotDefined()
-    
-  
+  search_pri_queue = util.PriorityQueue()
+  traversed = []  # List of already visisted nodes
+  #move_dir = []   # List of actions taken to get to the current node
+  initial = problem.getStartState()  # Starting state of the problem
+
+  # Push a tuple of the start state and blank action list onto the given
+  # fringe data structure. If a priority queue is in use, then calculate
+  # the priority using the heuristic
+
+  search_pri_queue.push((initial, []), heuristic(initial, problem))
+
+  # While there are still elements on the fringe, expand the value of each
+  # node for the node to explore, actions to get there, and the cost. If the
+  # node isn't traversed already, check to see if node is the goal. If no, then
+  # add all of the node's successors onto the fringe (with relevant
+  # information about path and cost associated with that node)
+  while search_pri_queue:
+
+      (node, actions) = search_pri_queue.pop()
+
+      if not node in traversed:
+          traversed.append(node)
+          if problem.isGoalState(node):
+              return actions
+          children = problem.getSuccessors(node)
+          for child in children:
+              (coordinate, direction, cost) = child
+              newActions = actions + [direction]
+              newCost = problem.getCostOfActions(newActions) + heuristic(coordinate, problem)
+              search_pri_queue.push((coordinate, newActions), newCost)
+
+  return []
+
+
 # Abbreviations
 bfs = breadthFirstSearch
 dfs = depthFirstSearch
