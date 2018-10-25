@@ -67,6 +67,7 @@ def tinyMazeSearch(problem):
   w = Directions.WEST
   return  [s,s,w,s,w,w,s,w]
 
+
 def depthFirstSearch(problem):
   """
   Search the deepest nodes in the search tree first [p 85].
@@ -85,29 +86,31 @@ def depthFirstSearch(problem):
 
   from game import Directions
 
-  # initialization
-  search_nodes = util.Stack()
+  # Initialization
+  search_stack = util.Stack()
   traversed = []
+  initial_state = problem.getStartState()
 
-  # push the starting point into stack
-  search_nodes.push((problem.getStartState(), []))
+  # Push the starting state in the stack.
+  search_stack.push((initial_state, []))
 
-  # pop out the point
-  (state, move_dir) = search_nodes.pop()
+  # While search_stack in the fringe of the present state is not empty, go on searching the goal.
+  while search_stack:
+      (state, move_dir) = search_stack.pop()
 
-  # add the point to traversed list
-  traversed.append(state)
+      if not state in traversed:  # Avoid revisiting the same state.
+          traversed.append(state)
 
-  while not problem.isGoalState(state):  # while we do not find the goal point
-      successors = problem.getSuccessors(state)  # get the point's successors
-      for elem in successors:
-          if (not elem[0] in traversed) or (
-          problem.isGoalState(elem[0])):  # if the successor has not been traversed, push it into stack
-              search_nodes.push((elem[0], move_dir + [elem[1]]))
-              traversed.append(elem[0])  # add this point to traversed list
-      (state, move_dir) = search_nodes.pop()
+          if problem.isGoalState(state):
+              return move_dir  # Return move_dir if goal is searched.
 
-  return move_dir
+          children = problem.getSuccessors(state)  # Get all child nodes of this state.
+
+          for child in children:  # child[0]: state of child, child[1]: action to get to the child.
+              search_stack.push((child[0], move_dir + [child[1]]))
+
+  return []  # Goal does not exist in the search_stack.
+
 
 def breadthFirstSearch(problem):
   "Search the shallowest nodes in the search tree first. [p 81]"
@@ -115,30 +118,30 @@ def breadthFirstSearch(problem):
 
   from game import Directions
 
-  # initialization
-  search_nodes = util.Queue()
+  # Initialization
+  search_queue = util.Queue()
   traversed = []
+  initial_state = problem.getStartState()
 
-  # push the starting point into stack
-  search_nodes.push((problem.getStartState(), []))
+  # Push the starting state in the queue.
+  search_queue.push((initial_state, []))
 
-  # pop out the point
-  (state, move_dir) = search_nodes.pop()
+  # While search_queue in the fringe of the present state is not empty, go on searching the goal.
+  while search_queue:
+      (state, move_dir) = search_queue.pop()
 
-  # add the point to traversed list
-  traversed.append(state)
+      if not state in traversed: # Avoid revisiting the same state.
+          traversed.append(state)
 
-  while not problem.isGoalState(state):  # while we do not find the goal point
-      successors = problem.getSuccessors(state)  # get the point's successors
-      for elem in successors:
-          if (not elem[0] in traversed) or (
-                  problem.isGoalState(elem[0])):  # if the successor has not been traversed, push it into stack
-              search_nodes.push((elem[0], move_dir + [elem[1]]))
-              traversed.append(elem[0])  # add this point to traversed list
-              # print 'elem[0]= ' + str(elem[0]) + ' elem[1]= ' + str(elem[1])  # print the route
-      (state, move_dir) = search_nodes.pop()
+          if problem.isGoalState(state):
+              return move_dir  # Return move_dir if goal is searched.
 
-  return move_dir
+          children = problem.getSuccessors(state) # Get all child nodes of this state.
+
+          for child in children: # child[0]: state of child, child[1]: action to get to the child.
+              search_queue.push((child[0], move_dir + [child[1]]))
+
+  return [] # Goal does not exist in the search_queue.
       
 def uniformCostSearch(problem):
   "Search the node of least total cost first. "
