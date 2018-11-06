@@ -268,7 +268,7 @@ class CornersProblem(search.SearchProblem):
     Stores the walls, pacman's starting position and corners.
     """
     self.walls = startingGameState.getWalls()
-    self.startingPosition = startingGameState.getPacmanPosition()
+    self.startPosition = startingGameState.getPacmanPosition()
     top, right = self.walls.height-2, self.walls.width-2 
     self.corners = ((1,1), (1,top), (right, 1), (right, top))
     for corner in self.corners:
@@ -284,7 +284,7 @@ class CornersProblem(search.SearchProblem):
     # Store visited corners in an array, and give the state as a tuple of
     # the current state and the visited corners
     visited = []
-    return (self.startingPosition, visited)
+    return (self.startPosition, visited)
     
   def isGoalState(self, state):
     "Returns whether this search state is a goal state of the problem"
@@ -307,29 +307,25 @@ class CornersProblem(search.SearchProblem):
     successors = []
     currentPosition = state[0]
     foundCorners = state[1]
-    bottom, left, top, right = 1, 1, self.walls.height - 2, self.walls.width - 2
 
-    # For every direction from the current position, check to see if moving
-    # will hit a wall. If it doesn't, see if making the move would lead to
-    # a corner. If so, give that move as a possible successor, and update
-    # the visited corners to reflect that the corner is visited (if that
-    # move is mode). Otherwise, just update the position without changing
-    # the visited corners.
+    # Check to see if each move from current position will hit a wall. If it doesn't, keep moving
+    # until reach a corner. So, give this move a possible successor, and update the visited corners
+    # if this move is made. Otherwise, just update the position without changing the visited corners.
     for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
       # Add a successor state to the successor list if the action is legal
       # Here's a code snippet for figuring out whether a new position hits a wall:
-        x,y = currentPosition
-        dx, dy = Actions.directionToVector(action)
-        nextx, nexty = int(x + dx), int(y + dy)
-        hitsWall = self.walls[nextx][nexty]
+      x,y = currentPosition
+      dx, dy = Actions.directionToVector(action)
+      nextx, nexty = int(x + dx), int(y + dy)
+      hitsWall = self.walls[nextx][nexty]
       
-    # "*** YOUR CODE HERE ***"
-        if not hitsWall:
-          if (nextx, nexty) in self.corners and (nextx, nexty) not in foundCorners:
-            visited = foundCorners + [(nextx, nexty)]
-            successors.append((((nextx, nexty), visited), action, 1))
-          else:
-            successors.append((((nextx, nexty), foundCorners), action, 1))
+      "*** YOUR CODE HERE ***"
+      if not hitsWall:
+        if (nextx, nexty) in self.corners and (nextx, nexty) not in foundCorners:
+          visited = foundCorners + [(nextx, nexty)]
+          successors.append((((nextx, nexty), visited), action, 1))
+        else:
+          successors.append((((nextx, nexty), foundCorners), action, 1))
 
     self._expanded += 1
     return successors
@@ -340,7 +336,7 @@ class CornersProblem(search.SearchProblem):
     include an illegal move, return 999999.  This is implemented for you.
     """
     if actions == None: return 999999
-    x,y= self.startingPosition
+    x,y= self.startPosition
     for action in actions:
       dx, dy = Actions.directionToVector(action)
       x, y = int(x + dx), int(y + dy)
@@ -367,31 +363,26 @@ def cornersHeuristic(state, problem):
   
   "*** YOUR CODE HERE ***"
   # return 0 # Default to trivial solution
-  corners = problem.corners  # These are the corner coordinates
-  walls = problem.walls  # These are the walls of the maze, as a Grid (game.py)
-  unvisited = []  # Hold unvisited corners
-  visited = state[1]  # Visited corners
-  node = state[0]  # Current node
-  heuristic = 0  # Heuristic value
+  unvisited = []        # Unvisited corners
+  visited = state[1]    # Visited corners
+  curr_node = state[0]  # Current node
+  heuristic = 0         # Heuristic value
 
-  # Find all the corners that we haven't visited yet, and append them to a
-  # list so we can go through them
+  # Find all of the unvisited corners and append them to a list so we can look them up.
   for corner in corners:
     if not corner in visited:
       unvisited.append(corner)
 
-  # Find the sum of the shortest distances between the unvisited corners. Use
-  # this as the heuristic because it is consistent (will always choose the
-  # same corners for a given situation). It solves the simpler problem where
-  # we find the number of moves when all of the walls have been removed. The
-  # heuristic will return 0 at a goal state since the minimum distance to a
-  # corner when in a corner is 0, and will never return a negative since
-  # mangattanDistance can never be negative.
+  # Find the sum of the shortest distances between the unvisited corners.
+  # This heuristic always choose the same corner as the current goal state.
+  # Manhattan distance is selected as the heuristic function. It will return
+  # 0 at the goal state, and will never return a negative due to its nature.
   while unvisited:
-    distance, corner = min([(util.manhattanDistance(node, corner), corner) \
-                            for corner in unvisited])
+    distance, corner = min([(util.manhattanDistance(curr_node, corner), corner) for corner in unvisited])
+    # distance, corner = min([(util.euclideanDistance(curr_node, corner), corner) for corner in unvisited])
+
     heuristic += distance
-    node = corner
+    curr_node = corner
     unvisited.remove(corner)
 
   return heuristic

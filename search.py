@@ -84,7 +84,6 @@ def depthFirstSearch(problem):
   """
   "*** YOUR CODE HERE ***"
 
-  from game import Directions
 
   # Initialization
   search_stack = util.Stack()
@@ -116,7 +115,6 @@ def breadthFirstSearch(problem):
   "Search the shallowest nodes in the search tree first. [p 81]"
   "*** YOUR CODE HERE ***"
 
-  from game import Directions
 
   # Initialization
   search_queue = util.Queue()
@@ -158,38 +156,36 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
   "Search the node that has the lowest combined cost and heuristic first."
   "*** YOUR CODE HERE ***"
+
+
+  # Initialization
   search_pri_queue = util.PriorityQueue()
-  traversed = []  # List of already visisted nodes
-  #move_dir = []   # List of actions taken to get to the current node
-  initial = problem.getStartState()  # Starting state of the problem
+  traversed = []
+  initial_state = problem.getStartState()
 
-  # Push a tuple of the start state and blank action list onto the given
-  # fringe data structure. If a priority queue is in use, then calculate
-  # the priority using the heuristic
+  # Push the starting state in the queue. If priority queue is in use, then use heuristic
+  # to calculate the priority.
+  search_pri_queue.push((initial_state, []), heuristic(initial_state, problem))
 
-  search_pri_queue.push((initial, []), heuristic(initial, problem))
-
-  # While there are still elements on the fringe, expand the value of each
-  # node for the node to explore, actions to get there, and the cost. If the
-  # node isn't traversed already, check to see if node is the goal. If no, then
-  # add all of the node's successors onto the fringe (with relevant
-  # information about path and cost associated with that node)
+  # While search_queue in the fringe of the present state is not empty, go on searching the goal.
   while search_pri_queue:
+      (state, move_dir) = search_pri_queue.pop()
 
-      (node, actions) = search_pri_queue.pop()
+      if not state in traversed: # Avoid revisiting the same state.
+          traversed.append(state)
 
-      if not node in traversed:
-          traversed.append(node)
-          if problem.isGoalState(node):
-              return actions
-          children = problem.getSuccessors(node)
-          for child in children:
-              (coordinate, direction, cost) = child
-              newActions = actions + [direction]
-              newCost = problem.getCostOfActions(newActions) + heuristic(coordinate, problem)
-              search_pri_queue.push((coordinate, newActions), newCost)
+          if problem.isGoalState(state):
+              return move_dir  # Return move_dir if goal is searched.
 
-  return []
+          children = problem.getSuccessors(state) # Get all child nodes of this state.
+
+          for child in children: # child[0]: state of child, child[1]: action to get to the child.
+              node_pos = child[0]
+              new_dir = move_dir + [child[1]]
+              new_cost = problem.getCostOfActions(new_dir) + heuristic(node_pos, problem)
+              search_pri_queue.push((node_pos, new_dir), new_cost)
+
+  return [] # Goal does not exist in the search_pri_queue.
 
 
 # Abbreviations
